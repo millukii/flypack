@@ -37,3 +37,6 @@ type AllShippingResponse struct {
 	ShippingListView []*ShippingListView `json:"shippingListView"`
 	Count            int                 `json:"count"`
 }
+
+type RegisterNewShippingResponse struct {}
+type GetAllShippingRequest struct {}

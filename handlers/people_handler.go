@@ -2,45 +2,77 @@ package handlers
 
 import (
 	"flypack/models"
+	"flypack/service/people"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 
-
-var peopleList = []models.People{
-	{ID: "1", Rut: 22221960, DV: "4", Name: "Ventas", Lastname: "Ventas", Address: "Los alerces 2363", City: "Santiago", Commune: "Nunoa", Email: "jojo@mail.com", Phone: "3435435", Profile: 1},
-		{ID: "2", Rut: 2343453, DV: "4", Name: "Vendedor2", Lastname: "apellido3", Address: "monjitas 744", City: "Santiago", Commune: "Santiago Centro", Email: "jojo@mail.com", Phone: "3435435", Profile: 2},
+type PeopleHandler interface{
+	GetPeople(c *gin.Context)
+	PostPeople(c *gin.Context) 
+	GetPeopleByID(c *gin.Context)
 }
 
-func GetPeople(c *gin.Context) {
+type peopleHandler struct {
+	peopleService people.PeopleService
+}
+
+func NewPeopleHandler(peopleService people.PeopleService) PeopleHandler{
+	
+	return &peopleHandler{
+		peopleService: peopleService,
+	}
+}
+
+func (h peopleHandler) GetPeople(c *gin.Context) {
 	//Allow CORS here By * or specific origin
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	c.IndentedJSON(http.StatusOK, peopleList)
-}
-
-func PostPeople(c *gin.Context) {
-	var newPeople models.People
-
-	if err := c.BindJSON(&newPeople); err != nil {
+	body :=&models.GetAllPeopleRequest{}
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
 		return
 	}
-
-	peopleList = append(peopleList, newPeople)
-	c.IndentedJSON(http.StatusCreated, newPeople)
+	people, err :=h.peopleService.GetAllPeoplesInfo(c, body)
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
+	c.IndentedJSON(http.StatusOK, people)
 }
 
-func GetPeopleByID(c *gin.Context) {
+func (h peopleHandler) PostPeople(c *gin.Context) {
+	var body models.RegisterNewPeopleRequest
+
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
+		return
+	}
+ 
+	newRegister, err := h.peopleService.RegisterPerson(c, &body)
+	
+		if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
+
+	c.IndentedJSON(http.StatusCreated, newRegister )
+}
+
+func (h peopleHandler) GetPeopleByID(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, a := range peopleList {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
+	register, err := h.peopleService.GetPeopleInfo(c, id)
+
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "People not found"})
+
+	if register == nil{
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "people register not found"})
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"people": register})
 }

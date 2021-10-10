@@ -2,43 +2,69 @@ package handlers
 
 import (
 	"flypack/models"
+	"flypack/service/shipping"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
-
-var shippingStates = []models.ShippingState{
-	{ID: "1", State: "BlueTrain"},
+type ShippingStateHandler interface{
+	GetShippingStates(c *gin.Context)
+	PostShippingState(c *gin.Context)
+	GetShippingStateByID(c *gin.Context)
 }
 
-func GetShippingStates(c *gin.Context) {
+type shippingStatesHandler struct {
+	shippingStateService shipping.ShippingStateService
+}
+
+func NewShippingStateHandler(shippingStateService shipping.ShippingStateService) ShippingStateHandler{
+
+	return &shippingStatesHandler{shippingStateService: shippingStateService}
+}
+func (h shippingStatesHandler) GetShippingStates(c *gin.Context) {
 	//Allow CORS here By * or specific origin
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	c.IndentedJSON(http.StatusOK, shippingStates)
+
+	states, err :=h.shippingStateService.GetShippingStates(c)
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
+	c.IndentedJSON(http.StatusOK, states)
 }
 
-func PostShippingState(c *gin.Context) {
-	var newShippingState models.ShippingState
+func (h shippingStatesHandler) PostShippingState(c *gin.Context) {
+	var body models.ShippingState
 
-	if err := c.BindJSON(&newShippingState); err != nil {
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
 		return
 	}
+ 
+	state, err := h.shippingStateService.AddShippingState(c, *&body.State)
+	
+		if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
 
-	shippingStates = append(shippingStates, newShippingState)
-	c.IndentedJSON(http.StatusCreated, newShippingState)
+	c.IndentedJSON(http.StatusCreated, state )
 }
 
-func GetShippingStateByID(c *gin.Context) {
+func (h shippingStatesHandler) GetShippingStateByID(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, a := range shippingStates {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
+	state, err := h.shippingStateService.GetShippingState(c, id)
+
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "ShippingState not found"})
+
+	if state == ""{
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "state not found"})
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"state": state})
 }

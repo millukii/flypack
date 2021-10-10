@@ -2,9 +2,8 @@ package repository
 
 import (
 	"context"
-	"flypack/config"
+	"database/sql"
 	"flypack/models"
-
 )
 
 type UserStateRepository interface {
@@ -18,61 +17,28 @@ type UserStateRepository interface {
 }
 
 type userStateRepository struct {
-
+ db *sql.DB
 }
 
-func NewUserStateRepository(repositoryType string, dbconfig *config.DBConfig) (UserStateRepository, error) {
+func NewUserStateRepository( db *sql.DB) (UserStateRepository, error) {
 
-		return  createUserStateRepository(repositoryType, dbconfig)
+		return  &userStateRepository{db: db}, nil
 }
 
-func createUserStateRepository(repositoryType string, dbconfig *config.DBConfig) (UserStateRepository, error){
 
-	switch repositoryType {
-	case "mysql":
-		return &mysqlUserStateRepository{}, nil
-	default:
-			return newMockUserStateRepository()
-	}
-}
-
-type mysqlUserStateRepository struct {
-
-}
-func(user *mysqlUserStateRepository) CreateUserState(ctx context.Context,data *models.UserState) (*models.UserState, error){
+func(user *userStateRepository) CreateUserState(ctx context.Context,data *models.UserState) (*models.UserState, error){
 
 	return nil, nil
 }
-func(user *mysqlUserStateRepository) GetAllUserState(ctx context.Context) ([]*models.UserState, error){
+func(user *userStateRepository) GetAllUserState(ctx context.Context) ([]*models.UserState, error){
 
 	return nil, nil
 }
-func(user *mysqlUserStateRepository) GetUserState(ctx context.Context, filter, value string) (*models.UserState, error){
+func(user *userStateRepository) GetUserState(ctx context.Context, filter, value string) (*models.UserState, error){
 
 	return nil, nil
 }
-func(user *mysqlUserStateRepository) UpdateUserState(ctx context.Context , data *models.UserState) (*models.UserState, error){
-
-	return nil, nil
-}
-type userStateMockRepository struct {}
-func newMockUserStateRepository() (UserStateRepository, error){
-
-	return &userStateMockRepository{}, nil
-}
-func(user *userStateMockRepository) CreateUserState(ctx context.Context,data *models.UserState) (*models.UserState, error){
-
-	return nil, nil
-}
-func(user *userStateMockRepository) GetAllUserState(ctx context.Context) ([]*models.UserState, error){
-
-	return nil, nil
-}
-func(user *userStateMockRepository) GetUserState(ctx context.Context, filter, value string) (*models.UserState, error){
-
-	return nil, nil
-}
-func(user *userStateMockRepository) UpdateUserState(ctx context.Context , data *models.UserState) (*models.UserState, error){
+func(user *userStateRepository) UpdateUserState(ctx context.Context , data *models.UserState) (*models.UserState, error){
 
 	return nil, nil
 }

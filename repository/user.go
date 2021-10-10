@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"flypack/config"
+	"database/sql"
 	"flypack/models"
+
 )
 
 type UserRepository interface {
@@ -17,61 +18,27 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-
+	db *sql.DB
 }
 
-func NewUserRepository(repositoryType string, dbconfig *config.DBConfig) (UserRepository, error) {
+func NewUserRepository(db *sql.DB) (UserRepository, error) {
 
-		return  createRepo(repositoryType, dbconfig)
+		return &userRepository{db: db}, nil
 }
 
-func createRepo(repositoryType string, dbconfig *config.DBConfig) (UserRepository, error){
-
-	switch repositoryType {
-	case "mysql":
-		return &mysqlUserRepository{}, nil
-	default:
-			return newMockUserRepository()
-	}
-}
-
-type mysqlUserRepository struct {
-
-}
-func(user *mysqlUserRepository) CreateUser(ctx context.Context,data *models.User) (*models.User, error){
+func(user *userRepository) CreateUser(ctx context.Context,data *models.User) (*models.User, error){
 
 	return nil, nil
 }
-func(user *mysqlUserRepository) GetAllUser(ctx context.Context) ([]*models.User, error){
+func(user *userRepository) GetAllUser(ctx context.Context) ([]*models.User, error){
 
 	return nil, nil
 }
-func(user *mysqlUserRepository) GetUser(ctx context.Context, filter, value string) (*models.User, error){
+func(user *userRepository) GetUser(ctx context.Context, filter, value string) (*models.User, error){
 
 	return nil, nil
 }
-func(user *mysqlUserRepository) UpdateUser(ctx context.Context , data *models.User) (*models.User, error){
-
-	return nil, nil
-}
-type userMockRepository struct {}
-func newMockUserRepository() (UserRepository, error){
-
-	return &userMockRepository{}, nil
-}
-func(user *userMockRepository) CreateUser(ctx context.Context,data *models.User) (*models.User, error){
-
-	return nil, nil
-}
-func(user *userMockRepository) GetAllUser(ctx context.Context) ([]*models.User, error){
-
-	return nil, nil
-}
-func(user *userMockRepository) GetUser(ctx context.Context, filter, value string) (*models.User, error){
-
-	return nil, nil
-}
-func(user *userMockRepository) UpdateUser(ctx context.Context , data *models.User) (*models.User, error){
+func(user *userRepository) UpdateUser(ctx context.Context , data *models.User) (*models.User, error){
 
 	return nil, nil
 }

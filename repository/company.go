@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"flypack/config"
+	"database/sql"
 	"flypack/models"
+
 )
 
 type CompanyRepository interface {
@@ -17,61 +18,27 @@ type CompanyRepository interface {
 }
 
 type companyRepository struct {
-
+	db *sql.DB
 }
 
-func NewCompanyRepository(repositoryType string, dbconfig *config.DBConfig) (CompanyRepository, error) {
+func NewCompanyRepository(db *sql.DB) (CompanyRepository, error) {
 
-		return  createCompanyRepository(repositoryType, dbconfig)
+		return &companyRepository{db: db}, nil
 }
 
-func createCompanyRepository(repositoryType string, dbconfig *config.DBConfig) (CompanyRepository, error){
-
-	switch repositoryType {
-	case "mysql":
-		return &mysqlCompanyRepository{}, nil
-	default:
-			return newMockCompanyRepository()
-	}
-}
-
-type mysqlCompanyRepository struct {
-
-}
-func(user *mysqlCompanyRepository) CreateCompany(ctx context.Context,data *models.Company) (*models.Company, error){
+func(user *companyRepository) CreateCompany(ctx context.Context,data *models.Company) (*models.Company, error){
 
 	return nil, nil
 }
-func(user *mysqlCompanyRepository) GetAllCompany(ctx context.Context) ([]*models.Company, error){
+func(user *companyRepository) GetAllCompany(ctx context.Context) ([]*models.Company, error){
 
 	return nil, nil
 }
-func(user *mysqlCompanyRepository) GetCompany(ctx context.Context, filter, value string) (*models.Company, error){
+func(user *companyRepository) GetCompany(ctx context.Context, filter, value string) (*models.Company, error){
 
 	return nil, nil
 }
-func(user *mysqlCompanyRepository) UpdateCompany(ctx context.Context , data *models.Company) (*models.Company, error){
-
-	return nil, nil
-}
-type companyMockRepository struct {}
-func newMockCompanyRepository() (CompanyRepository, error){
-
-	return &companyMockRepository{}, nil
-}
-func(user *companyMockRepository) CreateCompany(ctx context.Context,data *models.Company) (*models.Company, error){
-
-	return nil, nil
-}
-func(user *companyMockRepository) GetAllCompany(ctx context.Context) ([]*models.Company, error){
-
-	return nil, nil
-}
-func(user *companyMockRepository) GetCompany(ctx context.Context, filter, value string) (*models.Company, error){
-
-	return nil, nil
-}
-func(user *companyMockRepository) UpdateCompany(ctx context.Context , data *models.Company) (*models.Company, error){
+func(user *companyRepository) UpdateCompany(ctx context.Context , data *models.Company) (*models.Company, error){
 
 	return nil, nil
 }

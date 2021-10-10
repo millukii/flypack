@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 
 )
 
@@ -18,14 +19,11 @@ type shippingHandler struct {
 	shippingService shipping.ShippingService
 }
 
-func NewShippingHandler(shippingService shipping.ShippingService) (ShippingHandler, error) {
+func NewShippingHandler(shippingService shipping.ShippingService) (ShippingHandler) {
 
 	return &shippingHandler{
 			shippingService: shippingService,
-	}, nil
-}
-var shippings = []models.Shipping{
-	{ID: "1", OrderNumber: 1, TickerNumber: "1", ShippingType: "1", Value: 1, Date: "2015-01-01", ShippingState: 1, Company: 1, Delivery: 1, Client: 1},
+	}
 }
 
 func (h shippingHandler) GetShippings(c *gin.Context) {
@@ -33,25 +31,39 @@ func (h shippingHandler) GetShippings(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	c.IndentedJSON(http.StatusOK, shippings)
+	body :=&models.GetAllShippingRequest{}
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
+		return
+	}
+	users, err :=h.shippingService.GetAllShippingInfo(c, body)
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
+	c.IndentedJSON(http.StatusOK, users)
 }
 
 func (h shippingHandler) PostShippings(c *gin.Context) {
-	var newShipping models.Shipping
+	var body models.CreateShippingRequest
 
-	if err := c.BindJSON(&newShipping); err != nil {
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
 		return
 	}
+ 
+	newShipping, err := h.shippingService.CreateShipping(c, &body)
+	
+		if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
 
-	shippings = append(shippings, newShipping)
-	c.IndentedJSON(http.StatusCreated, newShipping)
+	c.IndentedJSON(http.StatusCreated, newShipping )
 }
 
 func (h shippingHandler) GetShippingByID(c *gin.Context) {
 	id := c.Param("id")
 
 	shipping, err := h.shippingService.GetShippingById(c, id)
-
 
 	if err != nil {
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})

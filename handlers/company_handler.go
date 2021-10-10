@@ -2,20 +2,31 @@ package handlers
 
 import (
 	"flypack/models"
+	"flypack/service/company"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 
 )
 
+type CompanyHandler interface {
+	GetCompanies(c *gin.Context)
+	PostCompany(c *gin.Context)
+	GetCompanyByID(c *gin.Context)
 
-var companies = []models.Company{
-	{ID: "1", Rut: 22221960, DV: "4", Razon: "Ventas", Address: "Los alerces 2363", City: "Santiago", Commune: "Nunoa", LegalPerson: 1},
-		{ID: "2", Rut: 3423432432, DV: "4", Razon: "Empresa3", Address: "cualqioer address", City: "Santiago", Commune: "Nunoa", LegalPerson: 3},
 }
 
-func GetCompanies(c *gin.Context) {
+type companyHandler struct {
+	companyService company.CompanyService
+}
+
+func NewCompanyHandler(companyService company.CompanyService) CompanyHandler{
+	return &companyHandler{companyService: companyService}
+}
+
+func (h companyHandler) GetCompanies(c *gin.Context) {
 	//Allow CORS here By * or specific origin
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -29,28 +40,47 @@ func GetCompanies(c *gin.Context) {
 	log.Printf("Rango %s", rangeInput)
 	log.Printf("Ordernar por %s", sortInput)
 
+	body :=&models.GetAllCompanyRequest{}
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
+		return
+	}
+	companies, err :=h.companyService.GetAllCompanysInfo(c, body)
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
 	c.IndentedJSON(http.StatusOK, companies)
 }
 
-func PostCompany(c *gin.Context) {
-	var newCompany models.Company
+func (h companyHandler) PostCompany(c *gin.Context) {
+	var body models.RegisterNewCompanyRequest
 
-	if err := c.BindJSON(&newCompany); err != nil {
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
 		return
 	}
+ 
+	newCompany, err := h.companyService.CreateCompanyInfo(c, &body)
+	
+		if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	}
 
-	companies = append(companies, newCompany)
-	c.IndentedJSON(http.StatusCreated, newCompany)
+	c.IndentedJSON(http.StatusCreated, newCompany )
 }
 
-func GetCompanyByID(c *gin.Context) {
+func (h companyHandler) GetCompanyByID(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, a := range companies {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
+	company, err := h.companyService.GetCompanyInfo(c, id)
+
+	if err != nil {
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "company not found"})
+
+	if company == nil{
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "company not found"})
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"company": company})
 }

@@ -16,10 +16,10 @@ type PeopleService interface {
 }
 
 type people struct{
-	peopleRepository *repository.PeopleRepository
+	peopleRepository repository.PeopleRepository
 }
 
-func NewPeopleService(repository *repository.PeopleRepository) (PeopleService, error){
+func NewPeopleService(repository repository.PeopleRepository) (PeopleService, error){
 
 	newService := &people{
 		peopleRepository: repository,

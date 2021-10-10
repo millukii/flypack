@@ -10,7 +10,7 @@ import (
 type ShippingService interface {
 	GetShippingById(ctx context.Context, id string) (*models.ShippingListView, error)
 	CreateShipping(ctx context.Context, req *models.CreateShippingRequest) (*models.ShippingListView, error)
-	 GetAllShippingInfo(ctx context.Context, id string) (*models.ShippingListView, error)
+	 GetAllShippingInfo(ctx context.Context,req *models.GetAllShippingRequest) (*models.ShippingListView, error)
 	UpdateShippingInfo(ctx context.Context, id string) (*models.ShippingListView, error)
 	CancelShipping(ctx context.Context, id string) (*models.ShippingListView, error)
 }
@@ -36,7 +36,7 @@ func (svc shippingService)		CreateShipping(ctx context.Context, req *models.Crea
 	return nil, nil
 }
 
-func (svc shippingService)	 GetAllShippingInfo(ctx context.Context, id string) (*models.ShippingListView, error){
+func (svc shippingService)	 GetAllShippingInfo(ctx context.Context,req *models.GetAllShippingRequest) (*models.ShippingListView, error){
 		return nil, nil
 }
 
