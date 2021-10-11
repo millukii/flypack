@@ -2,7 +2,7 @@ package main
 
 import (
 	"flypack/config"
-	"flypack/db/mysql"
+	"flypack/db/mysqldts"
 	"flypack/handlers"
 	"flypack/repository"
 	"flypack/service/company"
@@ -10,13 +10,22 @@ import (
 	"flypack/service/shipping"
 	"flypack/service/user"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
+	"github.com/joho/godotenv"
 )
 
+func init() {
+	    err := godotenv.Load(".env")
+    if err != nil {
+        log.Fatalf("unable to load .env file")
+    }
+}
 func main() {
 	router := gin.Default()
 
@@ -44,17 +53,30 @@ dbconfig := &config.DBConfig{
 
 dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", 
 dbconfig.User, dbconfig.Password,dbconfig.Host, dbconfig.Port, dbconfig.DBName)
-db,err := mysql.MySQLConnect(dns)
+db,err := mysqldts.MySQLConnect(dns)
 
 if err != nil {
+	fmt.Println("Error connection database: ", err.Error())
+		panic(err)
+}
 
+if db ==nil {
+		fmt.Println("Error connection database")
+		panic("Driver error")
+}
+connectionError := db.Ping()
+if connectionError  != nil {
+		fmt.Println("Error ping database", connectionError.Error())
+		panic(connectionError.Error())
 }
 userRepo, err := repository.NewUserRepository(db)
 if err != nil {
-	
+		fmt.Println("Error creating user repository: ", err.Error())
+		panic(err)
 }
-userService, err := user.NewUserService(&userRepo)
-accountService, err := user.NewUserAccountService(&userRepo)
+
+userService, err := user.NewUserService(userRepo)
+accountService, err := user.NewUserAccountService(userRepo)
 userHandler := handlers.NewUserHandler(userService, accountService)
 
 router.GET("/users", userHandler.GetUsers)
@@ -98,7 +120,7 @@ router.POST("/people", peopleHandler.PostPeople)
 
 	
 	shippingRepo, err := repository.NewShippingRepository(db)
-	shippingService, err := shipping.NewShippingService(&shippingRepo)
+	shippingService, err := shipping.NewShippingService(shippingRepo)
 	shippingsHandler := handlers.NewShippingHandler(shippingService)
 	router.GET("/shippings", shippingsHandler.GetShippings)
 	router.GET("/shippings/:id", shippingsHandler.GetShippings)
@@ -113,5 +135,14 @@ shippingStatesHandler := handlers.NewShippingStateHandler(shippingStatesService)
 	router.GET("/shippingstates/:id", shippingStatesHandler.GetShippingStateByID)
 	router.POST("/shippingstates", shippingStatesHandler.PostShippingState)
 
-	router.Run("localhost:8080")
+	
+    s := &http.Server{
+        Addr:           ":8080",
+        Handler:        router,
+        ReadTimeout:    10 * time.Second,
+        WriteTimeout:   10 * time.Second,
+        MaxHeaderBytes: 1 << 20,
+    }
+    s.ListenAndServe()
+
 }

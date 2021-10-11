@@ -4,7 +4,6 @@ import (
 	"context"
 	"flypack/models"
 	"flypack/repository"
-
 )
 
 type UserAccountService interface {
@@ -16,10 +15,10 @@ type UserAccountService interface {
 }
 
 type userAccount struct{
-	userRepository *repository.UserRepository
+	userRepository repository.UserRepository
 }
 
-func NewUserAccountService(repository *repository.UserRepository) (UserAccountService, error){
+func NewUserAccountService(repository repository.UserRepository) (UserAccountService, error){
 
 	newService := &userAccount{
 		userRepository: repository,
@@ -39,5 +38,23 @@ func (user userAccount) DeActivateAccount(ctx context.Context, req *models.Regis
 }
 
 func (user userAccount) RegisterNewAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error){
-	return nil, nil
+
+	newUser := &models.User{
+		User: req.User,
+		Register: req.Register,
+		Rol: req.Rol,
+		State: 1,
+	}
+
+	created, err := user.userRepository.CreateUser(ctx, newUser)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	return &models.RegisterNewUserResponse{
+		User: created.User,
+		Rol: created.Rol,
+		Message: "Usuario creado satisfactoriamente",
+	}, nil
 }

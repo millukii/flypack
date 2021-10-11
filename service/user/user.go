@@ -15,10 +15,10 @@ type UserService interface {
 }
 
 type user struct{
-	userRepository *repository.UserRepository
+	userRepository repository.UserRepository
 }
 
-func NewUserService(repository *repository.UserRepository) (UserService, error){
+func NewUserService(repository repository.UserRepository) (UserService, error){
 
 	newService := &user{
 		userRepository: repository,

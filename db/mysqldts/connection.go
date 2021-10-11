@@ -1,7 +1,9 @@
-package mysql
+package mysqldts
 
 import (
 	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func MySQLConnect(dns string) (*sql.DB,error) {

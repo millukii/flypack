@@ -3,6 +3,7 @@ package handlers
 import (
 	"flypack/models"
 	"flypack/service/user"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-
 )
 
 type UserHandler interface {
@@ -80,7 +80,9 @@ func (h userHandler) PostUsers(c *gin.Context) {
 	newUserResponse, err := h.accountService.RegisterNewAccount(c, &body)
 	
 		if err != nil {
+			fmt.Println("Controller error calling accountService.RegisterNewAccount ", err.Error())
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+		return
 	}
 
 	c.IndentedJSON(http.StatusCreated, newUserResponse )
@@ -92,6 +94,7 @@ func (h userHandler) GetUserByID(c *gin.Context) {
 	user, err := h.userService.GetUserInfo(c, id)
 
 	if err != nil {
+
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
 	}
 

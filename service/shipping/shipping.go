@@ -16,10 +16,10 @@ type ShippingService interface {
 }
 
 type shippingService struct{
-	repository *repository.ShippingRepository
+	repository repository.ShippingRepository
 }
 
-func NewShippingService(repository *repository.ShippingRepository) (ShippingService, error) {
+func NewShippingService(repository repository.ShippingRepository) (ShippingService, error) {
 
 	return &shippingService{
 		repository: repository,

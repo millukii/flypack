@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  db:
+    container_name: "db"
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: db.Dockerfile
+    restart: always
+    ports:
+      - "127.0.0.1:3305:3306"
+    volumes:
+      - database_mysql:/var/lib/mysql
+      - ./sql-scripts/mysql-init.sql:/tmp/mysql-init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: '12345'
+      MYSQL_DATABASE: flypack
+      MYSQL_USER: dba
+      MYSQL_PASSWORD: '12345'
+    #3command: --default-authentication-plugin=mysql_native_password
+    command: "--character-set-server=UTF8MB3"
+    networks:
+      - flypack
+  api:
+    container_name: "api"
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ".:/goapp"
+    depends_on:
+      - db
+    links:
+      - "db:database"
+    networks:
+      - flypack
+networks:
+  flypack:
+    driver: bridge
+volumes:
+  database_mysql:
