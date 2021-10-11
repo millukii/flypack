@@ -13,10 +13,10 @@ services:
       - database_mysql:/var/lib/mysql
       - ./sql-scripts/mysql-init.sql:/tmp/mysql-init.sql
     environment:
-      MYSQL_ROOT_PASSWORD: '12345'
-      MYSQL_DATABASE: flypack
-      MYSQL_USER: dba
-      MYSQL_PASSWORD: '12345'
+      - "MYSQL_ROOT_PASSWORD:12345"
+      - "MYSQL_DATABASE:flypack"
+      - "MYSQL_USER:dba"
+      - "MYSQL_PASSWORD:12345"
     #3command: --default-authentication-plugin=mysql_native_password
     command: "--character-set-server=UTF8MB3"
     networks:
