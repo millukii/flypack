@@ -18,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
 	"github.com/joho/godotenv"
+
 )
 
 func init() {
@@ -77,7 +78,8 @@ if err != nil {
 
 userService, err := user.NewUserService(userRepo)
 accountService, err := user.NewUserAccountService(userRepo)
-userHandler := handlers.NewUserHandler(userService, accountService)
+passwordGenerator := user.PasswordGenerator{}
+userHandler := handlers.NewUserHandler(userService, accountService,passwordGenerator)
 
 router.GET("/users", userHandler.GetUsers)
 router.GET("/users/:id", userHandler.GetUserByID)

@@ -4,10 +4,11 @@ import (
 	"context"
 	"flypack/models"
 	"flypack/repository"
+	"fmt"
 )
 
 type UserAccountService interface {
-	RegisterNewAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
+	RegisterNewAccount(ctx context.Context, req *models.RegisterNewUserRequest, passwordGenerator PasswordGenerator) (*models.RegisterNewUserResponse, error)
 	ResetPassword(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
 	ActivateAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
 	DeActivateAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
@@ -37,12 +38,18 @@ func (user userAccount) DeActivateAccount(ctx context.Context, req *models.Regis
 	return nil, nil
 }
 
-func (user userAccount) RegisterNewAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error){
+func (user userAccount) RegisterNewAccount(ctx context.Context, req *models.RegisterNewUserRequest, passwordGenerator PasswordGenerator) (*models.RegisterNewUserResponse, error){
 
+	secureAndOneTimePassword, err := passwordGenerator.GeneratePassword()
+	if err != nil {
+		fmt.Println("Error secureAndOneTimePassword the value now is empty")
+	}
 	newUser := &models.User{
+		ID: 0,
 		User: req.User,
 		Register: req.Register,
-		Rol: req.Rol,
+		Role: req.Role,
+		Password: secureAndOneTimePassword ,
 		State: 1,
 	}
 
@@ -54,7 +61,7 @@ func (user userAccount) RegisterNewAccount(ctx context.Context, req *models.Regi
 	
 	return &models.RegisterNewUserResponse{
 		User: created.User,
-		Rol: created.Rol,
+		Role: created.Role,
 		Message: "Usuario creado satisfactoriamente",
 	}, nil
 }

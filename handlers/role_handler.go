@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 )
 type RoleHandler interface{
 	GetRoles(c *gin.Context)

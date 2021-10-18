@@ -19,14 +19,15 @@ type UserHandler interface {
 	Login(c *gin.Context)
 	PostUsers(c *gin.Context)
 	GetUserByID(c *gin.Context)
+	UpdateUserByID(c *gin.Context)
 }
 
 type userHandler struct {
 	userService user.UserService
 	accountService user.UserAccountService
-
+	passwordGenerator user.PasswordGenerator
 }
-func NewUserHandler(userService user.UserService, 	accountService user.UserAccountService) UserHandler {
+func NewUserHandler(userService user.UserService, 	accountService user.UserAccountService, passwordGenerator user.PasswordGenerator) UserHandler {
 	return &userHandler{userService: userService,	accountService: accountService}
 }
 
@@ -35,14 +36,15 @@ func (h userHandler) GetUsers(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	body :=&models.GetAllUserRequest{}
+/* 	body :=&models.GetAllUserRequest{}
 	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
 		c.AbortWithError(http.StatusBadRequest,err)
 		return
-	}
-	users, err :=h.userService.GetAllUsersInfo(c, body)
+	} */
+	users, err :=h.userService.GetAllUsersInfo(c, nil)
 	if err != nil {
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+	return
 	}
 	c.IndentedJSON(http.StatusOK, users)
 }
@@ -59,7 +61,7 @@ func (h userHandler) Login(c *gin.Context) {
      return
   }
 
-	id, _ := strconv.ParseUint(user.ID, 0, 64) 
+	id, _ := strconv.ParseUint("10", 0, 64) 
   token, err := CreateToken(id)
 
   if err != nil {
@@ -77,7 +79,7 @@ func (h userHandler) PostUsers(c *gin.Context) {
 		return
 	}
  
-	newUserResponse, err := h.accountService.RegisterNewAccount(c, &body)
+	newUserResponse, err := h.accountService.RegisterNewAccount(c, &body, h.passwordGenerator)
 	
 		if err != nil {
 			fmt.Println("Controller error calling accountService.RegisterNewAccount ", err.Error())
@@ -88,23 +90,48 @@ func (h userHandler) PostUsers(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newUserResponse )
 }
 
+func (h userHandler) UpdateUserByID(c *gin.Context) {
+	id := c.Param("id")
+
+	var body models.RegisterUpdateUserRequest
+
+	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
+		c.AbortWithError(http.StatusBadRequest,err)
+		return
+	}
+
+	user, err := h.userService.EditUserInfo(c, id, &body)
+
+	if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+			return
+	}
+
+	if user == nil{
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "user not found"})
+			return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"user": user})
+}
+
 func (h userHandler) GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 
 	user, err := h.userService.GetUserInfo(c, id)
 
 	if err != nil {
-
-	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
+			return
 	}
 
 	if user == nil{
 			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "user not found"})
+			return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"user": user})
 }
-
 func CreateToken(userid uint64) (string, error) {
   var err error
   //Creating Access Token
