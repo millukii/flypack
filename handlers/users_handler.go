@@ -4,6 +4,7 @@ import (
 	"flypack/models"
 	"flypack/service/user"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,6 +37,13 @@ func (h userHandler) GetUsers(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
+	filter := c.Query("filter")
+	rangeInput := c.Query("range")
+	sortInput := c.Query("sort")
+	
+	log.Printf("Filtros %s", filter)
+	log.Printf("Rango %s", rangeInput)
+	log.Printf("Ordernar por %s", sortInput)
 /* 	body :=&models.GetAllUserRequest{}
 	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
 		c.AbortWithError(http.StatusBadRequest,err)

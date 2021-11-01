@@ -32,7 +32,7 @@ type GetAllUserRequest struct{}
 
 type AllUserResponse struct {
 	UserListView []*UserListView `json:"userListView"`
-	Count        int             `json:"count"`
+	Total        int             `json:"total"`
 }
 type RegisterUpdateUserRequest struct {
 	User  string `json:"user"`

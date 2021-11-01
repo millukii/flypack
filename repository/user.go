@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flypack/models"
 	"fmt"
+
 )
 
 type UserRepository interface {
@@ -14,21 +15,22 @@ type UserRepository interface {
 	UpdateUser(
 		ctx context.Context,
 		user *models.User)(*models.User, error)
-	
+	DeleteUser(ctx context.Context, id string) (error)
 }
 
 type userRepository struct {
 	db *sql.DB
+	table string
 }
 
 func NewUserRepository(db *sql.DB) (UserRepository, error) {
 
-		return &userRepository{db: db}, nil
+		return &userRepository{db: db, table: "user"}, nil
 }
 
-func(user *userRepository) CreateUser(ctx context.Context,data *models.User) (*models.User, error){
+func(userRepo *userRepository) CreateUser(ctx context.Context,data *models.User) (*models.User, error){
  
-query :=	fmt.Sprintf("INSERT INTO %s (user,password,rol_id,user_state_id,people_id) VALUES ('%s','%s',%d,%d,%d)", "users",
+query :=	fmt.Sprintf("INSERT INTO %s (user,password,rol_id,user_state_id,people_id) VALUES ('%s','%s',%d,%d,%d)", userRepo.table,
 			data.User, 	
 			data.Password,
 			data.Role,
@@ -36,41 +38,35 @@ query :=	fmt.Sprintf("INSERT INTO %s (user,password,rol_id,user_state_id,people_
 			data.Register,
 )
 	fmt.Println("Query to execute ", query)
-	result, err := user.db.Exec(query)
+	result, err := userRepo.db.Exec(query)
 
 if err != nil {
 	fmt.Printf("could not insert row: %v", err)
 	return nil, err
 }
 
-// the `Result` type has special methods like `RowsAffected` which returns the
-// total number of affected rows reported by the database
-// In this case, it will tell us the number of rows that were inserted using
-// the above query
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		fmt.Printf("could not get affected rows: %v", err)
 		return nil, err
 	}
-// we can log how many rows were inserted
-		fmt.Println("inserted", rowsAffected, "rows")
+	fmt.Println("inserted", rowsAffected, "rows")
 
 		return data, nil
 	}
 
 
-func(user *userRepository) GetAllUser(ctx context.Context) (*models.AllUserResponse, error){
-  rows, err := user.db.Query("SELECT id, user, rol_id,user_state_id,people_id FROM users")
+func(userRepo *userRepository) GetAllUser(ctx context.Context) (*models.AllUserResponse, error){
+
+	query := fmt.Sprintf("SELECT id, user, rol_id,user_state_id,people_id FROM %s", userRepo.table)
+  rows, err := userRepo.db.Query(query)
     if err != nil {
 				fmt.Println("Error db.Query", err.Error())
         return nil, err
     }
     defer rows.Close()
 
-    // An album slice to hold data from returned rows.
     var users []*models.UserListView
-
-    // Loop through rows, using Scan to assign column data to struct fields.
     for rows.Next() {
         var user models.UserListView
         if err := rows.Scan(&user.ID, &user.User,&user.Role,
@@ -93,28 +89,27 @@ func(user *userRepository) GetAllUser(ctx context.Context) (*models.AllUserRespo
     }
     return &models.AllUserResponse{
 			UserListView: users,
-			Count: len(users),
+			Total: len(users),
 		}, nil
 }
-func(user *userRepository) GetUser(ctx context.Context, filter, value string) (*models.UserListView, error){
-	sqlStatement := fmt.Sprintf("SELECT id, user, rol_id,user_state_id,people_id FROM users WHERE %s=%s;", filter, value)
+func(userRepo *userRepository) GetUser(ctx context.Context, filter, value string) (*models.UserListView, error){
+	sqlStatement := fmt.Sprintf("SELECT id, user, rol_id,user_state_id,people_id FROM %s WHERE %s=%s;", userRepo.table,filter, value)
 var res models.UserListView
-row := user.db.QueryRow(sqlStatement)
+row := userRepo.db.QueryRow(sqlStatement)
 err := row.Scan(&res.ID, &res.User, &res.Role,&res.State, &res.Register)
-switch err {
-case sql.ErrNoRows:
-  fmt.Println("No rows were returned!")
-  return nil, nil
-case nil:
-  fmt.Println(user)
-default:
-  panic(err)
+
+if err != nil {
+	if err == sql.ErrNoRows {
+		fmt.Println("No rows were returned!")
+  	return nil, nil
+	}
+		return nil, err
+	}
+	return &res, nil
 }
-return &res, nil
-}
-func(user *userRepository) UpdateUser(ctx context.Context , data *models.User) (*models.User, error){
+func(userRepo *userRepository) UpdateUser(ctx context.Context , data *models.User) (*models.User, error){
  
-query :=	fmt.Sprintf("UPDATE  %s set user='%s', password='%s',rol_id=%d,user_state_id=%d,people_id=%d", "users",
+query :=	fmt.Sprintf("UPDATE  %s set user='%s', password='%s',rol_id=%d,user_state_id=%d,people_id=%d", userRepo.table,
 			data.User, 	
 			data.Password,
 			data.Role,
@@ -122,24 +117,40 @@ query :=	fmt.Sprintf("UPDATE  %s set user='%s', password='%s',rol_id=%d,user_sta
 			data.Register,
 )
 	fmt.Println("Query to execute ", query)
-	result, err := user.db.Exec(query)
+	result, err := userRepo.db.Exec(query)
   
 if err != nil {
 	fmt.Printf("could not update row: %v", err)
 	return nil, err
 }
 
-// the `Result` type has special methods like `RowsAffected` which returns the
-// total number of affected rows reported by the database
-// In this case, it will tell us the number of rows that were inserted using
-// the above query
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		fmt.Printf("could not get affected rows: %v", err)
 		return nil, err
 	}
-// we can log how many rows were inserted
-		fmt.Println("inserted", rowsAffected, "rows")
+	fmt.Println("inserted", rowsAffected, "rows")
 
 		return data, nil
+}
+
+func(userRepo *userRepository) 	DeleteUser(ctx context.Context, id string) (error){
+	
+	query :=	fmt.Sprintf("DELETE from %s WHERE id='%s'", userRepo.table,id)
+
+	result, err :=	userRepo.db.Exec(query)
+
+if err != nil {
+	fmt.Printf("could not deleted row: %v", err)
+	return err
+}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		fmt.Printf("could not get affected rows: %v", err)
+		return err
+	}
+ fmt.Println("deleted", rowsAffected, "rows")
+
+	return nil
 }

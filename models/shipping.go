@@ -22,6 +22,7 @@ type CreateShippingRequest struct {
 }
 
 type ShippingListView struct {
+	ID            string  `json:"id"`
 	OrderNumber   int     `json:"order_nro"`
 	TickerNumber  string  `json:"boleta_nro"`
 	ShippingType  string  `json:"type"`
