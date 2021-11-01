@@ -4,6 +4,7 @@ import (
 	"flypack/config"
 	"flypack/db/mysqldts"
 	"flypack/handlers"
+	"flypack/logger"
 	"flypack/repository"
 	"flypack/service/company"
 	"flypack/service/people"
@@ -70,14 +71,16 @@ if connectionError  != nil {
 		fmt.Println("Error ping database", connectionError.Error())
 		panic(connectionError.Error())
 }
+
+logger,_ := logger.NewApplicationLogger()
 userRepo, err := repository.NewUserRepository(db)
 if err != nil {
 		fmt.Println("Error creating user repository: ", err.Error())
 		panic(err)
 }
 
-userService, err := user.NewUserService(userRepo)
-accountService, err := user.NewUserAccountService(userRepo)
+userService := user.NewUserService(userRepo, logger)
+accountService := user.NewUserAccountService(userRepo)
 passwordGenerator := user.PasswordGenerator{}
 userHandler := handlers.NewUserHandler(userService, accountService,passwordGenerator)
 
@@ -88,7 +91,7 @@ router.POST("/users/login", userHandler.Login)
 
 
 userStateRepo, err := repository.NewUserStateRepository(db)
-userStateService, err := user.NewUserStateService(userStateRepo)
+userStateService := user.NewUserStateService(userStateRepo)
 userStatesHandler := handlers.NewUserStateHandler(userStateService)
 
 router.GET("/userstates", userStatesHandler.GetUserStates)
@@ -96,7 +99,7 @@ router.GET("/userstates/:id", userStatesHandler.GetUserStateByID)
 router.POST("/userstates", userStatesHandler.PostUserState)
 
 companyRepo, err := repository.NewCompanyRepository(db)
-companyService, err := company.NewCompanyService(companyRepo)
+companyService := company.NewCompanyService(companyRepo)
 companyHandler := handlers.NewCompanyHandler(companyService)
 
 router.GET("/companies",companyHandler.GetCompanies)
@@ -104,7 +107,7 @@ router.GET("/companies/:id", companyHandler.GetCompanyByID)
 router.POST("/companies", companyHandler.PostCompany)
 
 peopleRepo, err := repository.NewPeopleRepository(db)
-peopleService, err := people.NewPeopleService(peopleRepo)
+peopleService := people.NewPeopleService(peopleRepo)
 peopleHandler := handlers.NewPeopleHandler(peopleService)
 
 router.GET("/people", peopleHandler.GetPeople)
@@ -113,7 +116,7 @@ router.POST("/people", peopleHandler.PostPeople)
 
 
 	roleRepository, err := repository.NewRoleRepository(db)
-	roleService, err := user.NewRoleService(roleRepository)
+	roleService := user.NewRoleService(roleRepository)
 	roleHandler := handlers.NewRoleHandler(roleService)
 
 	router.GET("/roles", roleHandler.GetRoles)
@@ -122,7 +125,7 @@ router.POST("/people", peopleHandler.PostPeople)
 
 	
 	shippingRepo, err := repository.NewShippingRepository(db)
-	shippingService, err := shipping.NewShippingService(shippingRepo)
+	shippingService := shipping.NewShippingService(shippingRepo)
 	shippingsHandler := handlers.NewShippingHandler(shippingService)
 	router.GET("/shippings", shippingsHandler.GetShippings)
 	router.GET("/shippings/:id", shippingsHandler.GetShippings)
@@ -130,7 +133,7 @@ router.POST("/people", peopleHandler.PostPeople)
 
 
 shippingStatesRepo, err := repository.NewShippingStateRepository(db)
-shippingStatesService, err := shipping.NewShippingStateService(shippingStatesRepo)
+shippingStatesService := shipping.NewShippingStateService(shippingStatesRepo)
 shippingStatesHandler := handlers.NewShippingStateHandler(shippingStatesService)
 
 	router.GET("/shippingstates", shippingStatesHandler.GetShippingStates)

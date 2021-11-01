@@ -19,13 +19,13 @@ type people struct{
 	peopleRepository repository.PeopleRepository
 }
 
-func NewPeopleService(repository repository.PeopleRepository) (PeopleService, error){
+func NewPeopleService(repository repository.PeopleRepository) (PeopleService){
 
 	newService := &people{
 		peopleRepository: repository,
 	}
 
-	return newService, nil
+	return newService
 }
 
 func (people people) RegisterPerson(ctx context.Context, req *models.RegisterNewPeopleRequest) (*models.RegisterNewPeopleResponse, error){

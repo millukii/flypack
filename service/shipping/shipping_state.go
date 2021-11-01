@@ -18,9 +18,9 @@ type shippingStateService struct{
 	repository repository.ShippingStateRepository
 }
 
-func NewShippingStateService(repository repository.ShippingStateRepository) (ShippingStateService, error) {
+func NewShippingStateService(repository repository.ShippingStateRepository) (ShippingStateService) {
 
-	return &shippingStateService{repository: repository}, nil
+	return &shippingStateService{repository: repository}
 }
 
 	func (r shippingStateService) AddShippingState (ctx context.Context, name string) (string, error){

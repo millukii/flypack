@@ -19,13 +19,13 @@ type company struct{
 	companyRepository repository.CompanyRepository
 }
 
-func NewCompanyService(repository repository.CompanyRepository) (CompanyService, error){
+func NewCompanyService(repository repository.CompanyRepository) (CompanyService){
 
 	newService := &company{
 		companyRepository: repository,
 	}
 
-	return newService, nil
+	return newService
 }
 
 func (company company) EditCompanyInfo(ctx context.Context, req *models.RegisterNewCompanyRequest) (*models.RegisterNewCompanyResponse, error){

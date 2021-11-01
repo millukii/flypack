@@ -19,11 +19,11 @@ type shippingService struct{
 	repository repository.ShippingRepository
 }
 
-func NewShippingService(repository repository.ShippingRepository) (ShippingService, error) {
+func NewShippingService(repository repository.ShippingRepository) (ShippingService) {
 
 	return &shippingService{
 		repository: repository,
-	}, nil
+	}
 }
 
 func (svc shippingService)		GetShippingById(ctx context.Context, id string) (*models.ShippingListView, error){

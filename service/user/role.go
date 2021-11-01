@@ -18,9 +18,9 @@ type roleService struct{
 	repository repository.RoleRepository
 }
 
-func NewRoleService(repository repository.RoleRepository) (RoleService, error) {
+func NewRoleService(repository repository.RoleRepository) (RoleService) {
 
-	return &roleService{repository: repository}, nil
+	return &roleService{repository: repository}
 }
 
 	func (r roleService) AddRole (ctx context.Context, name string) (string, error){

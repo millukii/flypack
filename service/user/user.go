@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"flypack/errors"
+	"flypack/logger"
 	"flypack/models"
 	"flypack/repository"
 	"fmt"
@@ -9,36 +11,58 @@ import (
 )
 
 type UserService interface {
-	EditUserInfo(ctx context.Context,id string, req *models.RegisterUpdateUserRequest) (*models.RegisterNewUserResponse, error)
+	EditUserInfo(ctx context.Context,id string, req *models.RegisterUpdateUserRequest) (*models.UserListView, error)
 	GetUserInfo(ctx context.Context, id string) (*models.UserListView, error)
 	GetAllUsersInfo(ctx context.Context, req *models.GetAllUserRequest) (*models.	AllUserResponse, error)
 
 }
 
-type user struct{
+type userService struct{
 	userRepository repository.UserRepository
+	logger logger.ApplicationLogger
 }
 
-func NewUserService(repository repository.UserRepository) (UserService, error){
+func NewUserService(repository repository.UserRepository, logger logger.ApplicationLogger) (UserService){
 
-	newService := &user{
+	newService := &userService{
 		userRepository: repository,
+		logger: logger,
 	}
 
-	return newService, nil
+	return newService
 }
 
-func (user user) EditUserInfo(ctx context.Context,id string, req *models.RegisterUpdateUserRequest) (*models.RegisterNewUserResponse, error){
-	return nil, nil
-}
-func (user user) GetUserInfo(ctx context.Context, id string) (*models.UserListView, error){
+func (userSvc userService) EditUserInfo(ctx context.Context,id string, req *models.RegisterUpdateUserRequest) (*models.UserListView, error){
+	userSvc.logger.InitFunction()
+	defer userSvc.logger.EndFunction()
 
-	userInfo, err :=	user.userRepository.GetUser(ctx, "id", id)
+	updatedUser, err :=	userSvc.userRepository.UpdateUser(ctx,&models.User{
+		User: req.User, 
+		Role: req.Role,
+		State: req.State,
+	})
 	if err != nil {
-		fmt.Println("Error calling userRepository.GetUser ", err)
+		userSvc.logger.Error(err, errors.ErrRepositoryUpdateRecord.Error())
 		return nil, err
 	}
-	fmt.Println("Repo retrieves user info ", userInfo)
+	return &models.UserListView{
+		User: updatedUser.User,
+		Role: updatedUser.Role,
+		State: updatedUser.State,
+	}, nil
+}
+func (userSvc userService) GetUserInfo(ctx context.Context, id string) (*models.UserListView, error){
+
+	userSvc.logger.InitFunction()
+	defer userSvc.logger.EndFunction()
+	
+	userInfo, err :=	userSvc.userRepository.GetUser(ctx, "id", id)
+
+	if err != nil {
+		userSvc.logger.Error(err, errors.ErrRepositoryGetRecord.Error())
+		return nil, err
+	}
+	userSvc.logger.Info(fmt.Sprintf("Repo retrieves user info %+v", userInfo))
 	if userInfo == nil {
 		return nil, nil
 	}
@@ -50,12 +74,14 @@ func (user user) GetUserInfo(ctx context.Context, id string) (*models.UserListVi
 		Register: userInfo.Register,
 	}, nil
 }
-func (user user) 	GetAllUsersInfo(ctx context.Context, req *models.GetAllUserRequest) (*models.	AllUserResponse, error){
+func (userSvc userService) 	GetAllUsersInfo(ctx context.Context, req *models.GetAllUserRequest) (*models.	AllUserResponse, error){
+	userSvc.logger.InitFunction()
+	defer userSvc.logger.EndFunction()
 
-	users, err := user.userRepository.GetAllUser(ctx)
+	users, err := userSvc.userRepository.GetAllUser(ctx)
 
 	if err != nil {
-		fmt.Println("Error calling userRepository.GetAllUser ", err)
+		userSvc.logger.Error(err, errors.ErrRepositoryGetAll.Error())
 		return nil, err
 	}
 	return users, nil

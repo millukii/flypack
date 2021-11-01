@@ -19,13 +19,13 @@ type userAccount struct{
 	userRepository repository.UserRepository
 }
 
-func NewUserAccountService(repository repository.UserRepository) (UserAccountService, error){
+func NewUserAccountService(repository repository.UserRepository) (UserAccountService){
 
 	newService := &userAccount{
 		userRepository: repository,
 	}
 
-	return newService, nil
+	return newService
 }
 
 func (user userAccount) 	ResetPassword(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error){

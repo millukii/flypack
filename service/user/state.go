@@ -17,9 +17,9 @@ type userStateService struct{
 	repository repository.UserStateRepository
 }
 
-func NewUserStateService(repository repository.UserStateRepository) (UserStateService, error) {
+func NewUserStateService(repository repository.UserStateRepository) (UserStateService) {
 
-	return &userStateService{repository: repository}, nil
+	return &userStateService{repository: repository}
 }
 
 	func (r userStateService) GetUserStates (ctx context.Context) ([]string, error){
