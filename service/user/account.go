@@ -12,7 +12,7 @@ type UserAccountService interface {
 	ResetPassword(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
 	ActivateAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
 	DeActivateAccount(ctx context.Context, req *models.RegisterNewUserRequest) (*models.RegisterNewUserResponse, error)
-
+	Login(ctx context.Context, req *models.RequestLogin)(*models.LoginResponse, error)
 }
 
 type userAccount struct{
