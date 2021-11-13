@@ -39,5 +39,7 @@ type AllShippingResponse struct {
 	Count            int                 `json:"count"`
 }
 
-type RegisterNewShippingResponse struct {}
-type GetAllShippingRequest struct {}
+type RegisterNewShippingResponse struct{}
+type GetAllShippingRequest struct {
+	Limit int `json:"limit"`
+}

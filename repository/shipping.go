@@ -73,7 +73,7 @@ rows, err := shippingRepo.db.Query(query)
     for rows.Next() {
         var shipping models.Shipping
         if err := rows.Scan(&shipping.ID, &shipping.OrderNumber,&shipping.TickerNumber,
-            &shipping.ShippingType, &shipping.Date,&shipping.ShippingState,&shipping.Company, &shipping.Delivery, &shipping.Client); err != nil {
+            &shipping.ShippingType, &shipping.Value,&shipping.Date,&shipping.ShippingState,&shipping.Company, &shipping.Delivery, &shipping.Client); err != nil {
 							fmt.Println("Error rows.Scan ", err.Error())
             break
         }

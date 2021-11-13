@@ -65,3 +65,7 @@ func (user userAccount) RegisterNewAccount(ctx context.Context, req *models.Regi
 		Message: "Usuario creado satisfactoriamente",
 	}, nil
 }
+
+func (user userAccount)	Login(ctx context.Context, req *models.RequestLogin)(*models.LoginResponse, error){
+	return nil,nil
+}

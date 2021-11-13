@@ -7,6 +7,7 @@ import (
 	"flypack/logger"
 	"flypack/repository"
 	"flypack/service/company"
+	"flypack/service/order"
 	"flypack/service/people"
 	"flypack/service/shipping"
 	"flypack/service/user"
@@ -19,7 +20,6 @@ import (
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
 	"github.com/joho/godotenv"
-
 )
 
 func init() {
@@ -105,6 +105,30 @@ companyHandler := handlers.NewCompanyHandler(companyService)
 router.GET("/companies",companyHandler.GetCompanies)
 router.GET("/companies/:id", companyHandler.GetCompanyByID)
 router.POST("/companies", companyHandler.PostCompany)
+
+orderRepo, err := repository.NewOrderRepository(db)
+orderService := order.NewOrderService(orderRepo)
+orderHandler := handlers.NewOrderHandler(orderService)
+
+router.GET("/orders",orderHandler.GetOrders)
+router.GET("/orders/:id", orderHandler.GetOrderByID)
+router.POST("/orders", orderHandler.PostOrder)
+
+manifiestRepo, err := repository.NewManifiestRepository(db)
+manifiestService := shipping.NewManifiestService(manifiestRepo)
+manifiestHandler := handlers.NewManifiestHandler(manifiestService)
+
+router.GET("/manifiests",manifiestHandler.GetManifiests)
+router.GET("/manifiests/:id", manifiestHandler.GetManifiestByID)
+router.POST("/manifiests", manifiestHandler.PostManifiest)
+
+shipmentPackagesRepo, err := repository.NewShipmentPackagesRepository(db)
+shipmentPackagesService := shipping.NewShipmentPackagesService(shipmentPackagesRepo)
+shipmentPackagesHandler := handlers.NewShipmentPackageHandler(shipmentPackagesService)
+
+router.GET("/packages",shipmentPackagesHandler.GetShipmentPackages)
+router.GET("/packages/:id", shipmentPackagesHandler.GetShipmentPackageByID)
+router.POST("/packages", shipmentPackagesHandler.PostShipmentPackage)
 
 peopleRepo, err := repository.NewPeopleRepository(db)
 peopleService := people.NewPeopleService(peopleRepo)

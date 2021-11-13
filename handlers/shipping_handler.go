@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-
 )
 
 type ShippingHandler interface {
@@ -31,12 +30,12 @@ func (h shippingHandler) GetShippings(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	body :=&models.GetAllShippingRequest{}
+/* 	body :=&models.GetAllShippingRequest{}
 	if err := c.ShouldBindBodyWith(&body,binding.JSON);err!=nil{
 		c.AbortWithError(http.StatusBadRequest,err)
 		return
-	}
-	users, err :=h.shippingService.GetAllShippingInfo(c, body)
+	} */
+	users, err :=h.shippingService.GetAllShippingInfo(c, nil)
 	if err != nil {
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "error in service"})
 	}

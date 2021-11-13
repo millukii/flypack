@@ -39,7 +39,8 @@ type RegisterUpdateUserRequest struct {
 	Role  int    `json:"rol_id"`
 	State int    `json:"user_state_id"`
 }
-
+type RequestLogin struct{}
+type LoginResponse struct {}
 func (user *User) ActivateAccount() error {
 	user.State = 1
 	return nil
