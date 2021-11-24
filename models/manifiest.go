@@ -8,7 +8,7 @@ type Manifiest struct {
 	Commune                string             `json:"commune"`
 	SmallPackagesCapacity  int                `json:"smallPackagesCapacity"`
 	MediumPackagesCapacity int                `json:"mediumPackagesCapacity"`
-	XtraPackagesCapacity   int                `json:"straPackagesCapacity"`
+	XtraPackagesCapacity   int                `json:"xtraPackagesCapacity"`
 	PackageList            []*ShipmentPackage `json:"shipmentPackages"`
 }
 

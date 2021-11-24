@@ -10,6 +10,7 @@ import (
 	"flypack/service/order"
 	"flypack/service/people"
 	"flypack/service/shipping"
+	"flypack/service/traveler"
 	"flypack/service/user"
 	"fmt"
 	"log"
@@ -113,6 +114,14 @@ orderHandler := handlers.NewOrderHandler(orderService)
 router.GET("/orders",orderHandler.GetOrders)
 router.GET("/orders/:id", orderHandler.GetOrderByID)
 router.POST("/orders", orderHandler.PostOrder)
+
+travelerRepo, err := repository.NewTravelerRepository(db)
+travelerService := traveler.NewTravelerService(travelerRepo)
+travelerHandler := handlers.NewTravelerHandler(travelerService)
+
+router.GET("/travelers",travelerHandler.GetTravelers)
+router.GET("/travelers/:id", travelerHandler.GetTravelerByID)
+router.POST("/travelers", travelerHandler.PostTraveler)
 
 manifiestRepo, err := repository.NewManifiestRepository(db)
 manifiestService := shipping.NewManifiestService(manifiestRepo)
